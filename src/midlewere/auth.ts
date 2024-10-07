@@ -27,6 +27,9 @@ export const verifyUser = () => {
         new AppError(httpStatus.UNAUTHORIZED, 'Unauthorized, missing token');
       }
       if (decoded?.data.role === 'user') {
+        console.log(decoded.data);
+
+        req.body.author = decoded.data._id;
         next();
       } else {
         res.status(httpStatus.UNAUTHORIZED).json({

@@ -1,3 +1,4 @@
+import { PostRoute } from '../post/post.route';
 import { UserRoute } from '../user/user.route';
 import express from 'express';
 
@@ -6,6 +7,10 @@ const moduleRoute = [
   {
     path: '/auth',
     route: UserRoute,
+  },
+  {
+    path: '/posts',
+    route: PostRoute,
   },
 ];
 

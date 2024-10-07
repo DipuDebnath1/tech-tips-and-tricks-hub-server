@@ -1,0 +1,62 @@
+[
+  {
+    "author": "6490fc1e80c4e79b8e50e51a",
+    "title": "Building Responsive Websites",
+    "content": "In this article, we will explore techniques to build responsive websites using CSS Flexbox and Grid.",
+    "images": "https://example.com/images/responsive-web-design.jpg",
+    "category": "Web",
+    "tags": ["CSS", "Responsive Design", "Web Development"],
+    "isPremium": false,
+    "upVotes": 10,
+    "downVotes": 2,
+    "comments": 5
+  },
+  {
+    "author": "6490fc1e80c4e79b8e50e51b",
+    "title": "Introduction to Software Engineering",
+    "content": "Software engineering is a systematic approach to software development that emphasizes quality and efficiency.",
+    "images": "https://example.com/images/software-engineering.jpg",
+    "category": "Software Engineering",
+    "tags": ["Software", "Engineering", "Development"],
+    "isPremium": true,
+    "upVotes": 25,
+    "downVotes": 1,
+    "comments": 10
+  },
+  {
+    "author": "6490fc1e80c4e79b8e50e51c",
+    "title": "The Future of AI Technology",
+    "content": "AI technology is evolving rapidly and impacting various sectors. Let's discuss the future of AI.",
+    "images": "https://example.com/images/future-of-ai.jpg",
+    "category": "AI",
+    "tags": ["AI", "Technology", "Innovation"],
+    "isPremium": false,
+    "upVotes": 15,
+    "downVotes": 3,
+    "comments": 7
+  },
+  {
+    "author": "6490fc1e80c4e79b8e50e51d",
+    "title": "Best Hardware for Gaming PCs",
+    "content": "Choosing the right hardware is crucial for building an efficient gaming PC. Here are our recommendations.",
+    "images": "https://example.com/images/gaming-pc-hardware.jpg",
+    "category": "Hardware",
+    "tags": ["Gaming", "Hardware", "PC Build"],
+    "isPremium": false,
+    "upVotes": 20,
+    "downVotes": 0,
+    "comments": 12
+  },
+  {
+    "author": "6490fc1e80c4e79b8e50e51e",
+    "title": "Top Mobile Apps of 2024",
+    "content": "Discover the top mobile apps of 2024 that can enhance your productivity and entertainment.",
+    "images": "https://example.com/images/top-mobile-apps.jpg",
+    "category": "Mobile Apps",
+    "tags": ["Mobile", "Apps", "Technology"],
+    "isPremium": true,
+    "upVotes": 5,
+    "downVotes": 1,
+    "comments": 3
+  }
+]
