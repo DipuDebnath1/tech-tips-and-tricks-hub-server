@@ -1,8 +1,8 @@
 import express from 'express';
 import validationRequest from '../../utills/validationRequest';
 import { verifyUser } from '../../../midlewere/auth';
-import postValidation from './post.validation';
-import { PostController } from './post.controller';
+import postValidation from './comment.validation';
+import { CommentController } from './comment.controller';
 const router = express.Router();
 
 //******* user ***********
@@ -10,8 +10,8 @@ router.post(
   '/',
   validationRequest(postValidation.postValidationSchema),
   verifyUser(),
-  PostController.AddPost,
+  CommentController.AddComment,
 );
-router.get('/', PostController.FindAllPost);
+router.get('/:id', CommentController.FindComment);
 
-export const PostRoute = router;
+export const CommentRoute = router;

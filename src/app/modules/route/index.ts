@@ -1,3 +1,4 @@
+import { CommentRoute } from '../comment/comment.route';
 import { PostRoute } from '../post/post.route';
 import { UserRoute } from '../user/user.route';
 import express from 'express';
@@ -11,6 +12,10 @@ const moduleRoute = [
   {
     path: '/posts',
     route: PostRoute,
+  },
+  {
+    path: '/comment',
+    route: CommentRoute,
   },
 ];
 

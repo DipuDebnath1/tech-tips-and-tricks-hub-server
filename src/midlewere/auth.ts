@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextFunction, Request, Response } from 'express';
 import catchAsync from '../app/utills/catchAsync';
-import jwt, { JwtPayload } from 'jsonwebtoken';
-import config from '../config';
 import AppError from '../app/ErrorHandler/AppError';
 import httpStatus from 'http-status';
+import { tokenDecoded } from '../app/utills/tokenDecoded';
 
 export const verifyUser = () => {
   return catchAsync(
@@ -17,19 +16,12 @@ export const verifyUser = () => {
           .json({ message: 'Authorization token missing or incorrect format' });
       }
 
-      const token = authHeader.split(' ')[1];
-      const decoded = jwt.verify(
-        token as string,
-        config.accessToken as string,
-      ) as JwtPayload;
+      const decoded = tokenDecoded(authHeader);
 
       if (!decoded) {
         new AppError(httpStatus.UNAUTHORIZED, 'Unauthorized, missing token');
       }
       if (decoded?.data.role === 'user') {
-        console.log(decoded.data);
-
-        req.body.author = decoded.data._id;
         next();
       } else {
         res.status(httpStatus.UNAUTHORIZED).json({
@@ -53,11 +45,7 @@ export const verifyAdmin = () => {
           .json({ message: 'Authorization token missing or incorrect format' });
       }
 
-      const token = authHeader.split(' ')[1];
-      const decoded = jwt.verify(
-        token as string,
-        config.accessToken as string,
-      ) as JwtPayload;
+      const decoded = tokenDecoded(authHeader);
       if (!decoded) {
         new AppError(httpStatus.UNAUTHORIZED, 'Unauthorized, missing token');
       }
