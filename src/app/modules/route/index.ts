@@ -14,7 +14,7 @@ const moduleRoute = [
     route: PostRoute,
   },
   {
-    path: '/comment',
+    path: '/comments',
     route: CommentRoute,
   },
 ];

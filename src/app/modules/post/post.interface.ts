@@ -14,7 +14,7 @@ export type TPosts = {
     | 'Tech Gadgets';
   tags?: string[];
   isPremium: boolean;
-  upVotes?: number;
-  downVotes?: number;
+  upVotes?: Types.ObjectId[];
+  downVotes?: Types.ObjectId[];
   comments?: number;
 };

@@ -36,7 +36,7 @@ const AddComment: RequestHandler = catchAsync(async (req, res, next) => {
 
 // find post
 const FindComment: RequestHandler = catchAsync(async (req, res, next) => {
-  const result = await CommentServices.findComment(req.params.id);
+  const result = await CommentServices.findComment(req.params.postId);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -46,7 +46,33 @@ const FindComment: RequestHandler = catchAsync(async (req, res, next) => {
   });
 });
 
+// delete post
+const DeleteComment: RequestHandler = catchAsync(async (req, res, next) => {
+  const token = req.headers.authorization;
+  if (!token) {
+    throw new AppError(httpStatus.UNAUTHORIZED, 'you are unauthorized user ');
+  }
+  const decoded = tokenDecoded(token) as JwtPayload;
+
+  if (!decoded) {
+    new AppError(httpStatus.UNAUTHORIZED, 'Unauthorized, missing token');
+  }
+  const result = await CommentServices.deleteComment({
+    postId: req.body.postId,
+    commentId: req.params.commentId,
+    userId: decoded?.data._id,
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: 'comment delete successfully',
+    success: true,
+    data: result,
+  });
+});
+
 export const CommentController = {
   AddComment,
   FindComment,
+  DeleteComment,
 };

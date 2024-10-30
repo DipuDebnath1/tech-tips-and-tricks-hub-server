@@ -12,6 +12,7 @@ router.post(
   verifyUser(),
   CommentController.AddComment,
 );
-router.get('/:id', CommentController.FindComment);
+router.get('/:postId', CommentController.FindComment);
+router.delete('/:commentId', CommentController.DeleteComment);
 
 export const CommentRoute = router;

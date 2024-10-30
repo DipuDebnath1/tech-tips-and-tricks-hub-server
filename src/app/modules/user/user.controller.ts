@@ -21,6 +21,7 @@ const createStudent: RequestHandler = catchAsync(async (req, res, next) => {
 
 const getSingleUser: RequestHandler = catchAsync(async (req, res, next) => {
   const data = await UserServices.getSingleUserIntoDB(req.body);
+
   if (data) {
     const token = jwt.sign({ data }, config.accessToken as string, {
       expiresIn: '1y',

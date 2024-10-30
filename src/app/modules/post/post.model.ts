@@ -21,8 +21,8 @@ const userSchema = new Schema<TPosts>(
     },
     tags: { type: [String], default: [] },
     isPremium: { type: Boolean, default: false },
-    upVotes: { type: Number, default: 0 },
-    downVotes: { type: Number, default: 0 },
+    upVotes: { type: [Schema.Types.ObjectId], default: [] },
+    downVotes: { type: [Schema.Types.ObjectId], default: [] },
     comments: { type: Number, default: 0 },
   },
   {
