@@ -9,6 +9,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import AppError from '../../ErrorHandler/AppError';
 
 // *************user*********
+// createStudent;
 const createStudent: RequestHandler = catchAsync(async (req, res, next) => {
   const result = await UserServices.createUserIntoDB(req.body);
   sendResponse(res, {
@@ -19,8 +20,9 @@ const createStudent: RequestHandler = catchAsync(async (req, res, next) => {
   });
 });
 
-const getSingleUser: RequestHandler = catchAsync(async (req, res, next) => {
-  const data = await UserServices.getSingleUserIntoDB(req.body);
+// LoginUser;
+const LoginUser: RequestHandler = catchAsync(async (req, res, next) => {
+  const data = await UserServices.loginUser(req.body);
 
   if (data) {
     const token = jwt.sign({ data }, config.accessToken as string, {
@@ -50,6 +52,18 @@ const getSingleUser: RequestHandler = catchAsync(async (req, res, next) => {
   }
 });
 
+// Find Single User;
+const FindSingleUser: RequestHandler = catchAsync(async (req, res, next) => {
+  const data = await UserServices.findSingleUser(req.params.id);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User retrieved in successfully',
+    data: data,
+  });
+});
+// updateUserProfileDB;
 const UpdateUserProfile: RequestHandler = catchAsync(async (req, res, next) => {
   const token = req?.headers.authorization?.split(' ')[1];
 
@@ -70,6 +84,54 @@ const UpdateUserProfile: RequestHandler = catchAsync(async (req, res, next) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Profile Update in successfully',
+    data: data,
+  });
+});
+// followingUser;
+const FollowingUser: RequestHandler = catchAsync(async (req, res, next) => {
+  const token = req?.headers.authorization?.split(' ')[1];
+
+  if (!token) {
+    return next(new AppError(httpStatus.UNAUTHORIZED, 'No token provided'));
+  }
+
+  const decoded = jwt.verify(
+    token,
+    config.accessToken as string,
+  ) as JwtPayload & { data: { _id: string } };
+  const data = await UserServices.followingUser(
+    decoded.data._id,
+    req.body.followedId,
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'follow successfully',
+    data: data,
+  });
+});
+// followingUser;
+const UnFollowingUser: RequestHandler = catchAsync(async (req, res, next) => {
+  const token = req?.headers.authorization?.split(' ')[1];
+
+  if (!token) {
+    return next(new AppError(httpStatus.UNAUTHORIZED, 'No token provided'));
+  }
+
+  const decoded = jwt.verify(
+    token,
+    config.accessToken as string,
+  ) as JwtPayload & { data: { _id: string } };
+  const data = await UserServices.unFollowingUser(
+    decoded.data._id,
+    req.body.followedId,
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'un Follow successfully',
     data: data,
   });
 });
@@ -125,8 +187,11 @@ const FindAllUser: RequestHandler = catchAsync(async (req, res, next) => {
 
 export const UserController = {
   createStudent,
-  getSingleUser,
+  LoginUser,
+  FindSingleUser,
   UpdateUserProfile,
+  FollowingUser,
+  UnFollowingUser,
   ChangeUserRole,
   BlockedUser,
   UnBlockedUser,

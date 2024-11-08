@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
 import httpStatus from 'http-status';
 import AppError from '../../ErrorHandler/AppError';
@@ -12,29 +13,48 @@ const postAddIntoDB = async (payload: TPosts) => {
   try {
     const post = (await PostsCollection.create(payload)).populate('author');
     return post;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
-    console.log(err);
     throw new AppError(
       httpStatus.CONFLICT,
       err.message || 'post create failed',
     );
   }
 };
-// find all post with query
-const findAllPost = async (isPremium: boolean, category?: string) => {
-  console.log(isPremium);
 
+// *********find operation *********
+// find User PostAllData
+const findMyAllPost = async (author: string) => {
+  const query = { author: new ObjectId(author) };
+  try {
+    const post = await PostsCollection.find(query)
+      .sort({ createdAt: -1 })
+      .populate('author');
+    return post;
+  } catch (err: any) {
+    throw new AppError(
+      httpStatus.CONFLICT,
+      err.message || 'post retrieved failed',
+    );
+  }
+};
+
+// find all post with query
+const findAllPost = async (
+  role: string,
+  isVerified: boolean,
+  category?: string,
+) => {
   try {
     const params: {
       category?: string;
       isPremium?: boolean;
-    } = {};
+      isDeleted: boolean;
+    } = { isDeleted: false };
 
     if (category) {
       params.category = category;
     }
-    if (!isPremium) {
+    if (!isVerified && role !== 'admin') {
       params.isPremium = false;
     }
 
@@ -42,8 +62,6 @@ const findAllPost = async (isPremium: boolean, category?: string) => {
       .sort({ createdAt: -1 })
       .populate('author');
     return res;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     console.log(err);
     throw new AppError(
@@ -60,6 +78,48 @@ const findSinglePost = async (id: string) => {
     throw new AppError(httpStatus.NOT_FOUND, 'Post not found');
   }
   return res;
+};
+
+// *********update operation *********
+
+// upvote
+const updatePost = async (
+  userId: string,
+  postId: string,
+  payload: Partial<TPosts>,
+) => {
+  const session = await PostsCollection.startSession();
+  try {
+    session.startTransaction();
+    const post = await PostsCollection.findById(postId).session(session);
+    if (!post) {
+      throw new AppError(httpStatus.NOT_FOUND, 'post Data not found');
+    }
+
+    if (post?.author.toString() !== userId) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'you can not access this post !',
+      );
+    }
+
+    const res = await PostsCollection.findByIdAndUpdate(postId, payload, {
+      new: true,
+      session,
+    });
+
+    await session.commitTransaction();
+    return res;
+  } catch (err: any) {
+    session.abortTransaction();
+    console.log(err);
+    throw new AppError(
+      httpStatus.CONFLICT,
+      err.message || 'upvote create failed',
+    );
+  } finally {
+    session.endSession();
+  }
 };
 
 // upvote
@@ -91,7 +151,6 @@ const upvoteAPost = async ({
     await post.save({ session });
     await session.commitTransaction();
     return post;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     session.abortTransaction();
     console.log(err);
@@ -103,6 +162,7 @@ const upvoteAPost = async ({
     session.endSession();
   }
 };
+
 // downvote
 const downvoteAPost = async ({
   userId,
@@ -132,7 +192,6 @@ const downvoteAPost = async ({
     await post.save({ session });
     await session.commitTransaction();
     return post;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     session.abortTransaction();
     console.log(err);
@@ -145,9 +204,48 @@ const downvoteAPost = async ({
   }
 };
 
+//delete
+const deletePost = async (postId: string, userId: string) => {
+  const session = await PostsCollection.startSession();
+  try {
+    session.startTransaction();
+    const post = await PostsCollection.findById(postId).session(session);
+    if (!post) {
+      throw new AppError(httpStatus.NOT_FOUND, 'post Data not found');
+    }
+
+    if (post?.author.toString() !== userId) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'you can not access this post !',
+      );
+    }
+
+    post.isDeleted = true;
+    await post.save({ session });
+
+    // const res = await PostsCollection.findByIdAndDelete(postId, { session });
+
+    await session.commitTransaction();
+    return post;
+  } catch (err: any) {
+    session.abortTransaction();
+    console.log(err);
+    throw new AppError(
+      httpStatus.CONFLICT,
+      err.message || 'upvote delete failed',
+    );
+  } finally {
+    session.endSession();
+  }
+};
+
 //*********admin ******** */
 export const PostServices = {
   postAddIntoDB,
+  findMyAllPost,
+  updatePost,
+  deletePost,
   findAllPost,
   findSinglePost,
   upvoteAPost,

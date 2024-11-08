@@ -1,3 +1,5 @@
+import { Types } from 'mongoose';
+
 export type TUser = {
   name: string;
   email: string;
@@ -9,6 +11,8 @@ export type TUser = {
   isVerified: boolean;
   isBlocked: boolean;
   address: string;
-  totalFollower: number;
-  totalFollowing: number;
+  totalFollower: Types.ObjectId[] | string;
+  totalFollowing: Types.ObjectId[] | string;
+  follow: (followerId: Types.ObjectId) => Promise<void>;
+  unFollow: (followerId: Types.ObjectId) => Promise<void>;
 };

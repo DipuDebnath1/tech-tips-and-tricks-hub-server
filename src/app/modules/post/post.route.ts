@@ -20,6 +20,9 @@ router.post('/downvote/:postId', verifyLoginUser(), PostController.AddDownVote);
 
 // FindAllPost
 router.get('/', PostController.FindAllPost);
+router.get('/my-post', PostController.FindMyAllPost);
 router.get('/:postId', PostController.FindSinglePost);
+router.put('/:postId', verifyLoginUser(), PostController.UpdatePost);
+router.delete('/:postId', verifyLoginUser(), PostController.DeletePost);
 
 export const PostRoute = router;

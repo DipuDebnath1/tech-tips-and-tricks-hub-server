@@ -1,31 +1,28 @@
+// /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Schema, model } from 'mongoose';
 import { TUser } from './user.interface';
 // import config from "../../config";
 import bcrypt from 'bcrypt';
 import config from '../../../config';
 
+// password123 =  $2b$10$qx9jGbAFw4CUK4HoUn/MKehg2wYevxbQHWZ.MYsRulThLotnpbt.C
 const userSchema = new Schema<TUser>(
   {
     name: {
       type: String,
-      required: true,
     },
     email: {
       type: String,
-      required: true,
       unique: true,
     },
     password: {
       type: String,
-      required: true,
     },
     phone: {
       type: String,
-      required: true,
     },
     img: {
       type: String,
-      required: true,
     },
     role: {
       type: String,
@@ -48,12 +45,14 @@ const userSchema = new Schema<TUser>(
       type: String,
     },
     totalFollower: {
-      type: Number,
-      default: 0,
+      type: [Schema.Types.ObjectId],
+      default: [],
+      ref: 'user',
     },
     totalFollowing: {
-      type: Number,
-      default: 0,
+      type: [Schema.Types.ObjectId],
+      default: [],
+      ref: 'user',
     },
   },
   {
@@ -70,13 +69,61 @@ userSchema.pre('save', async function (next) {
   );
   next();
 });
+//
+// userSchema.pre('save', async function (next) {
+//   // Only hash the password if it has been modified (i.e., not during every save operation)
+//   if (this.isModified('password')) {
+//     this.password = await bcrypt.hash(this.password, Number(config.saltRounds));
+//   }
+//   next();
+// });
 
 userSchema.set('toJSON', {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   transform: function (doc, ret, options) {
-    ret.password = undefined; // or delete ret.password;
+    ret.password = undefined;
     return ret;
   },
 });
+
+// // set following
+// userSchema.methods.follow = async function (followerId: Schema.Types.ObjectId) {
+//   // If the follower is not already in the totalFollower array
+//   if (!this.totalFollowing.includes(followerId)) {
+//     this.totalFollowing.push(followerId); // Add the follower to the totalFollower array
+//     await this.save(); // Save the updated user document
+
+//     // Find the follower and update their totalFollowing
+//     const follower = await User.findById(followerId);
+//     if (follower && !follower.totalFollower.includes(this._id)) {
+//       follower.totalFollower.push(this._id); // Add the user to the follower's totalFollowing array
+//       await follower.save(); // Save the updated follower document
+//     }
+//   }
+// };
+
+// // un Follow
+// userSchema.methods.unFollow = async function (
+//   followerId: Schema.Types.ObjectId,
+// ) {
+//   // Remove the follower from the totalFollowing array if they exist
+//   if (this.totalFollowing.includes(followerId)) {
+//     // Remove the followerId from totalFollowing
+//     this.totalFollowing = this.totalFollowing.filter(
+//       (id: any) => !id.equals(followerId),
+//     );
+//     await this.save(); // Save the updated user document
+
+//     // Find the follower and remove this user's ID from their totalFollower array
+//     const follower = await User.findById(followerId);
+//     if (follower && follower.totalFollower.includes(this._id)) {
+//       // Remove this user from the follower's totalFollower array
+//       follower.totalFollower = follower.totalFollower.filter(
+//         (id: any) => !id.equals(this._id),
+//       );
+//       await follower.save(); // Save the updated follower document
+//     }
+//   }
+// };
 
 export const User = model<TUser>('user', userSchema);

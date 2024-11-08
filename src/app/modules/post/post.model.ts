@@ -21,6 +21,7 @@ const userSchema = new Schema<TPosts>(
     },
     tags: { type: [String], default: [] },
     isPremium: { type: Boolean, default: false },
+    isDeleted: { type: Boolean, default: false },
     upVotes: { type: [Schema.Types.ObjectId], default: [] },
     downVotes: { type: [Schema.Types.ObjectId], default: [] },
     comments: { type: Number, default: 0 },
