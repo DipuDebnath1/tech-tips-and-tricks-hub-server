@@ -41,6 +41,10 @@ const userSchema = new Schema<TUser>(
       type: Boolean,
       default: false,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
     address: {
       type: String,
     },
@@ -85,45 +89,5 @@ userSchema.set('toJSON', {
     return ret;
   },
 });
-
-// // set following
-// userSchema.methods.follow = async function (followerId: Schema.Types.ObjectId) {
-//   // If the follower is not already in the totalFollower array
-//   if (!this.totalFollowing.includes(followerId)) {
-//     this.totalFollowing.push(followerId); // Add the follower to the totalFollower array
-//     await this.save(); // Save the updated user document
-
-//     // Find the follower and update their totalFollowing
-//     const follower = await User.findById(followerId);
-//     if (follower && !follower.totalFollower.includes(this._id)) {
-//       follower.totalFollower.push(this._id); // Add the user to the follower's totalFollowing array
-//       await follower.save(); // Save the updated follower document
-//     }
-//   }
-// };
-
-// // un Follow
-// userSchema.methods.unFollow = async function (
-//   followerId: Schema.Types.ObjectId,
-// ) {
-//   // Remove the follower from the totalFollowing array if they exist
-//   if (this.totalFollowing.includes(followerId)) {
-//     // Remove the followerId from totalFollowing
-//     this.totalFollowing = this.totalFollowing.filter(
-//       (id: any) => !id.equals(followerId),
-//     );
-//     await this.save(); // Save the updated user document
-
-//     // Find the follower and remove this user's ID from their totalFollower array
-//     const follower = await User.findById(followerId);
-//     if (follower && follower.totalFollower.includes(this._id)) {
-//       // Remove this user from the follower's totalFollower array
-//       follower.totalFollower = follower.totalFollower.filter(
-//         (id: any) => !id.equals(this._id),
-//       );
-//       await follower.save(); // Save the updated follower document
-//     }
-//   }
-// };
 
 export const User = model<TUser>('user', userSchema);

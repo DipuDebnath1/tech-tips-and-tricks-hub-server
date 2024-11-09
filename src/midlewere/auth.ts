@@ -22,7 +22,7 @@ export const verifyUser = () => {
       if (!decoded) {
         new AppError(httpStatus.UNAUTHORIZED, 'Unauthorized, missing token');
       }
-      if (decoded?.data.role === 'user') {
+      if (decoded?.data.role === 'user' || decoded?.data.role === 'admin') {
         next();
       } else {
         res.status(httpStatus.UNAUTHORIZED).json({

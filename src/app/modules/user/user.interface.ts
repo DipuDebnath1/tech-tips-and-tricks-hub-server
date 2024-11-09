@@ -10,9 +10,8 @@ export type TUser = {
   isPremium: boolean;
   isVerified: boolean;
   isBlocked: boolean;
+  isDeleted: boolean;
   address: string;
   totalFollower: Types.ObjectId[] | string;
   totalFollowing: Types.ObjectId[] | string;
-  follow: (followerId: Types.ObjectId) => Promise<void>;
-  unFollow: (followerId: Types.ObjectId) => Promise<void>;
 };

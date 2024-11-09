@@ -7,6 +7,7 @@ import httpStatus from 'http-status';
 import config from '../../../config';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import AppError from '../../ErrorHandler/AppError';
+import { tokenDecoded } from '../../utills/tokenDecoded';
 
 // *************user*********
 // createStudent;
@@ -95,10 +96,8 @@ const FollowingUser: RequestHandler = catchAsync(async (req, res, next) => {
     return next(new AppError(httpStatus.UNAUTHORIZED, 'No token provided'));
   }
 
-  const decoded = jwt.verify(
-    token,
-    config.accessToken as string,
-  ) as JwtPayload & { data: { _id: string } };
+  const decoded = tokenDecoded(token);
+
   const data = await UserServices.followingUser(
     decoded.data._id,
     req.body.followedId,
@@ -111,6 +110,7 @@ const FollowingUser: RequestHandler = catchAsync(async (req, res, next) => {
     data: data,
   });
 });
+
 // followingUser;
 const UnFollowingUser: RequestHandler = catchAsync(async (req, res, next) => {
   const token = req?.headers.authorization?.split(' ')[1];
@@ -119,10 +119,8 @@ const UnFollowingUser: RequestHandler = catchAsync(async (req, res, next) => {
     return next(new AppError(httpStatus.UNAUTHORIZED, 'No token provided'));
   }
 
-  const decoded = jwt.verify(
-    token,
-    config.accessToken as string,
-  ) as JwtPayload & { data: { _id: string } };
+  const decoded = tokenDecoded(token);
+
   const data = await UserServices.unFollowingUser(
     decoded.data._id,
     req.body.followedId,
@@ -138,9 +136,33 @@ const UnFollowingUser: RequestHandler = catchAsync(async (req, res, next) => {
 
 //**********admin*********
 
+// FindAllUser;
+const FindAllUser: RequestHandler = catchAsync(async (req, res, next) => {
+  const data = await UserServices.findAllUsersFromDB();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'get all users successfully',
+    data: data,
+  });
+});
+
+// ChangeUserRole;
 const ChangeUserRole: RequestHandler = catchAsync(async (req, res, next) => {
+  const token = req.headers.authorization;
+  if (!token) {
+    return next(new AppError(httpStatus.UNAUTHORIZED, 'No token provided'));
+  }
+
+  const decoded = tokenDecoded(token);
+
   const { userId, role } = req.body;
-  const data = await UserServices.changeUserRoleDB(userId, role);
+  const data = await UserServices.changeUserRoleDB(
+    userId,
+    role,
+    decoded.data._id,
+  );
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -149,7 +171,7 @@ const ChangeUserRole: RequestHandler = catchAsync(async (req, res, next) => {
     data: data,
   });
 });
-
+// BlockedUser;
 const BlockedUser: RequestHandler = catchAsync(async (req, res, next) => {
   const { userId } = req.body;
   const data = await UserServices.blockedUserDB(userId);
@@ -161,7 +183,7 @@ const BlockedUser: RequestHandler = catchAsync(async (req, res, next) => {
     data: data,
   });
 });
-
+// UnBlockedUser;
 const UnBlockedUser: RequestHandler = catchAsync(async (req, res, next) => {
   const { userId } = req.body;
   const data = await UserServices.unBlockedUserDB(userId);
@@ -174,13 +196,42 @@ const UnBlockedUser: RequestHandler = catchAsync(async (req, res, next) => {
   });
 });
 
-const FindAllUser: RequestHandler = catchAsync(async (req, res, next) => {
-  const data = await UserServices.findAllUsersFromDB();
+// DeleteUserRole;
+const DeleteUserRole: RequestHandler = catchAsync(async (req, res, next) => {
+  const token = req.headers.authorization;
+  if (!token) {
+    return next(new AppError(httpStatus.UNAUTHORIZED, 'No token provided'));
+  }
+
+  const decoded = tokenDecoded(token);
+
+  const { userId } = req.body;
+  const data = await UserServices.deleteUserDB(userId, decoded.data._id);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'get all users successfully',
+    message: 'User delete successfully',
+    data: data,
+  });
+});
+
+// RestoreUserRole;
+const RestoreUserRole: RequestHandler = catchAsync(async (req, res, next) => {
+  const token = req.headers.authorization;
+  if (!token) {
+    return next(new AppError(httpStatus.UNAUTHORIZED, 'No token provided'));
+  }
+
+  const decoded = tokenDecoded(token);
+
+  const { userId } = req.body;
+  const data = await UserServices.restoreUserDB(userId, decoded.data._id);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User restore successfully',
     data: data,
   });
 });
@@ -195,5 +246,7 @@ export const UserController = {
   ChangeUserRole,
   BlockedUser,
   UnBlockedUser,
+  DeleteUserRole,
+  RestoreUserRole,
   FindAllUser,
 };

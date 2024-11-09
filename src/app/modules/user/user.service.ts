@@ -26,17 +26,35 @@ const loginUser = async (payload: Partial<TUser>) => {
   const { password, email } = payload;
 
   try {
-    const data = await User.findOne({ email });
+    const user = await User.findOne({ email });
 
-    if (!data) {
-      return;
+    if (!user) {
+      throw new AppError(httpStatus.NOT_FOUND, 'user not found');
     }
 
     // Compare the password
-    const isMatch = await bcrypt.compare(password as string, data.password);
+    const isMatch = await bcrypt.compare(password as string, user.password);
 
     if (isMatch) {
-      return data;
+      // check user.isDeleted
+      if (user.isDeleted) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'sorry you already deleted!',
+        );
+      }
+
+      // check user.isBlocked
+
+      if (user.isBlocked) {
+        throw new AppError(
+          httpStatus.BAD_REQUEST,
+          'sorry you already blocked!',
+        );
+      }
+
+      // all ok sent user
+      return user;
     } else {
       throw new AppError(httpStatus.UNAUTHORIZED, 'Password does not match');
     }
@@ -151,7 +169,15 @@ const unFollowingUser = async (userId: string, followedId: string) => {
 
 // ********admin******
 
-const changeUserRoleDB = async (userId: string, role: string) => {
+// change user role
+const changeUserRoleDB = async (
+  userId: string,
+  role: string,
+  adminId: string,
+) => {
+  if (userId === adminId) {
+    throw new AppError(httpStatus.BAD_REQUEST, "you can't change your role !");
+  }
   try {
     if (role !== 'admin' && role !== 'user') {
       throw new AppError(httpStatus.BAD_REQUEST, 'enter valid user role !');
@@ -181,7 +207,7 @@ const changeUserRoleDB = async (userId: string, role: string) => {
     );
   }
 };
-
+// blocked user
 const blockedUserDB = async (userId: string) => {
   try {
     const user = await User.findById(userId);
@@ -202,6 +228,7 @@ const blockedUserDB = async (userId: string) => {
     );
   }
 };
+//un blocked user
 const unBlockedUserDB = async (userId: string) => {
   try {
     const user = await User.findById(userId);
@@ -226,6 +253,59 @@ const unBlockedUserDB = async (userId: string) => {
   }
 };
 
+// delete user
+const deleteUserDB = async (userId: string, adminId: string) => {
+  try {
+    if (userId === adminId) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'you can not deleted you');
+    }
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new AppError(httpStatus.BAD_REQUEST, "user Can't found !");
+    }
+    if (user.isDeleted) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'user already have deleted');
+    }
+
+    user.isDeleted = true;
+    await user.save();
+
+    return user;
+  } catch (error: any) {
+    throw new AppError(
+      httpStatus.CONFLICT,
+      error.message || 'user delete failed',
+    );
+  }
+};
+
+// restore user
+const restoreUserDB = async (userId: string, adminId: string) => {
+  try {
+    if (userId === adminId) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'you can not restore you');
+    }
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new AppError(httpStatus.BAD_REQUEST, "user Can't found !");
+    }
+    if (!user.isDeleted) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'user not found delete list');
+    }
+
+    user.isDeleted = false;
+    await user.save();
+
+    return user;
+  } catch (error: any) {
+    throw new AppError(
+      httpStatus.CONFLICT,
+      error.message || 'user restore failed',
+    );
+  }
+};
+
+// get all user
 const findAllUsersFromDB = async () => {
   try {
     const users = await User.find({}, '-password'); // Exclude password field
@@ -250,6 +330,8 @@ export const UserServices = {
   changeUserRoleDB,
   blockedUserDB,
   unBlockedUserDB,
+  deleteUserDB,
+  restoreUserDB,
   followingUser,
   unFollowingUser,
   findAllUsersFromDB,

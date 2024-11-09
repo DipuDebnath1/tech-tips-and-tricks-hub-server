@@ -18,9 +18,11 @@ router.post(
 router.post('/signin', UserController.LoginUser);
 router.post('/following', verifyUser(), UserController.FollowingUser);
 router.post('/un-following', verifyUser(), UserController.UnFollowingUser);
-router.post('/update-role', verifyAdmin(), UserController.ChangeUserRole);
+router.post('/change-role', verifyAdmin(), UserController.ChangeUserRole);
 router.post('/unblock', verifyAdmin(), UserController.UnBlockedUser);
 router.post('/block', verifyAdmin(), UserController.BlockedUser);
+router.post('/delete', verifyAdmin(), UserController.DeleteUserRole);
+router.post('/restore', verifyAdmin(), UserController.RestoreUserRole);
 
 router.get('/all-users', verifyAdmin(), UserController.FindAllUser);
 router.get('/:id', verifyLoginUser(), UserController.FindSingleUser);
