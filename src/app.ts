@@ -1,4 +1,9 @@
-import express, { Application, Request, Response } from 'express';
+import express, {
+  Application,
+  ErrorRequestHandler,
+  Request,
+  Response,
+} from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import globalErrorHandler from './midlewere/globalErrorHandler';
@@ -19,6 +24,6 @@ const getController = (req: Request, res: Response) => {
 app.get('/', getController);
 
 app.use(notFoundRoute);
-app.use(globalErrorHandler);
+app.use(globalErrorHandler as unknown as ErrorRequestHandler);
 
 export default app;

@@ -15,6 +15,7 @@ export type TPosts = {
   tags?: string[];
   isPremium: boolean;
   isDeleted?: boolean;
+  deletedBy?: 'admin' | 'user';
   upVotes?: Types.ObjectId[];
   downVotes?: Types.ObjectId[];
   comments?: number;

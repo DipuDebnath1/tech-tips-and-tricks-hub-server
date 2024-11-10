@@ -22,6 +22,7 @@ const postAddIntoDB = async (payload: TPosts) => {
 };
 
 // *********find operation *********
+
 // find User PostAllData
 const findMyAllPost = async (author: string) => {
   const query = { author: new ObjectId(author) };
@@ -74,6 +75,23 @@ const findAllPost = async (
 //find single product
 const findSinglePost = async (id: string) => {
   const res = PostsCollection.findById(id).populate('author');
+  if (!res) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Post not found');
+  }
+  return res;
+};
+
+//find all deleted product
+const findAllDeletedPost = async (category: string) => {
+  const params: {
+    category?: string;
+    isDeleted: boolean;
+  } = { isDeleted: true };
+
+  if (category) {
+    params.category = category;
+  }
+  const res = await PostsCollection.find(params).populate('author');
   if (!res) {
     throw new AppError(httpStatus.NOT_FOUND, 'Post not found');
   }
@@ -205,7 +223,11 @@ const downvoteAPost = async ({
 };
 
 //delete
-const deletePost = async (postId: string, userId: string) => {
+const deletePost = async (
+  postId: string,
+  userId: string,
+  role: 'user' | 'admin',
+) => {
   const session = await PostsCollection.startSession();
   try {
     session.startTransaction();
@@ -214,7 +236,7 @@ const deletePost = async (postId: string, userId: string) => {
       throw new AppError(httpStatus.NOT_FOUND, 'post Data not found');
     }
 
-    if (post?.author.toString() !== userId) {
+    if (post?.author.toString() !== userId && role !== 'admin') {
       throw new AppError(
         httpStatus.BAD_REQUEST,
         'you can not access this post !',
@@ -222,6 +244,7 @@ const deletePost = async (postId: string, userId: string) => {
     }
 
     post.isDeleted = true;
+    post.deletedBy = role;
     await post.save({ session });
 
     // const res = await PostsCollection.findByIdAndDelete(postId, { session });
@@ -244,6 +267,7 @@ const deletePost = async (postId: string, userId: string) => {
 export const PostServices = {
   postAddIntoDB,
   findMyAllPost,
+  findAllDeletedPost,
   updatePost,
   deletePost,
   findAllPost,

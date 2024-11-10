@@ -109,6 +109,21 @@ const FindSinglePost = catchAsync(async (req, res, next) => {
   });
 });
 
+// find All Deleted Post
+const FindAllDeletedPost: RequestHandler = catchAsync(
+  async (req, res, next) => {
+    const { category } = req.params;
+    const result = await PostServices.findAllDeletedPost(category);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      message: 'post retrieved successfully',
+      success: true,
+      data: result,
+    });
+  },
+);
+
 // UpdatePost;
 const UpdatePost: RequestHandler = catchAsync(async (req, res, next) => {
   const token = req.headers.authorization;
@@ -150,7 +165,11 @@ const DeletePost: RequestHandler = catchAsync(async (req, res, next) => {
     new AppError(httpStatus.UNAUTHORIZED, 'Unauthorized, missing token');
   }
 
-  const result = await PostServices.deletePost(postId, decoded?.data._id);
+  const result = await PostServices.deletePost(
+    postId,
+    decoded?.data._id,
+    decoded?.data.role,
+  );
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -219,6 +238,7 @@ export const PostController = {
   FindMyAllPost,
   FindAllPost,
   FindSinglePost,
+  FindAllDeletedPost,
   AddUpVote,
   AddDownVote,
 };

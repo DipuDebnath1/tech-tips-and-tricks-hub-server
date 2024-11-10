@@ -108,8 +108,8 @@ const followingUser = async (userId: string, followedId: string) => {
     }
 
     // Check if the user
-    const isFollowing = user.totalFollowing.includes(followedId);
-    const isFollowed = followedUser.totalFollower.includes(userId);
+    const isFollowing = user.totalFollowing.includes(followedId as any);
+    const isFollowed = followedUser.totalFollower.includes(userId as any);
 
     if (!isFollowing || !isFollowed) {
       // add IDs to the arrays
