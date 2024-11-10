@@ -112,7 +112,7 @@ export const success = (data: any) => {
       <h3>Order Details</h3>
       <div class="detail-item">Order ID: <strong>${data?.mer_txnid}</strong></div>
       <div class="detail-item">Amount Paid: <strong>${data?.amount}</strong></div>
-      <div class="detail-item">Payment Method: <strong>${data?.payment_processor}</strong></div>
+      <div class="detail-item">Payment Method: <strong>${data?.payment_type}</strong></div>
     </div>
 
     <!-- Back to Home Button -->

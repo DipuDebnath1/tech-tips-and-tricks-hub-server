@@ -47,6 +47,8 @@ const paymentRequest = async (data: TPaymentRequestData) => {
       paymentCancelledUrl: `${config.server_url}/payment/cancelled`,
     };
 
+    // console.log(paymentData);
+
     //   payment
     const paymentSession = await initialPayment(paymentData);
     await session.commitTransaction();
@@ -61,38 +63,85 @@ const paymentRequest = async (data: TPaymentRequestData) => {
 };
 
 //payment success
+// const paymentSuccess = async (txnId: string) => {
+//   const session = await paymentCollection.startSession();
+//   try {
+//     session.startTransaction();
+//     const verifyPay = await verifyPayment(txnId);
+
+//     if (verifyPay.pay_status === 'Successful') {
+//       // update user payment status
+//       const paymentData = await paymentCollection.findOneAndUpdate(
+//         { txtId: txnId },
+//         { isPayment: true, paymentMethod: verifyPay?.payment_type },
+//         { new: true, session },
+//       );
+//       // console.log(paymentData);
+//       if (paymentData) {
+//         // update user verified status
+//         await User.findByIdAndUpdate(
+//           paymentData.author,
+//           { isVerified: true },
+//           { new: true, session },
+//         );
+//       }
+//       session.commitTransaction();
+//       return verifyPay;
+//     } else {
+//       return false;
+//     }
+//   } catch (err: any) {
+//     session.abortTransaction();
+//     throw new AppError(httpStatus.BAD_REQUEST, err.message);
+//   } finally {
+//     session.endSession();
+//   }
+// };
+
+// paymentSuccess function to verify and update payment status
 const paymentSuccess = async (txnId: string) => {
   const session = await paymentCollection.startSession();
   try {
     session.startTransaction();
+
+    // Verify payment status via external API
     const verifyPay = await verifyPayment(txnId);
 
     if (verifyPay.pay_status === 'Successful') {
-      // update user payment status
+      // Update payment status in paymentCollection
       const paymentData = await paymentCollection.findOneAndUpdate(
-        { transactionId: txnId },
-        { isPayment: true },
-        { new: true, session },
-      );
-      if (!paymentData) {
-        throw new AppError(
-          httpStatus.BAD_REQUEST,
-          'verified status update failed',
-        );
-      }
-      // update user verified status
-      await User.findByIdAndUpdate(
-        paymentData.author,
-        { isVerified: true },
-        { new: true, session },
+        { txtId: txnId },
+        { isPayment: true, paymentMethod: verifyPay?.payment_type },
+        { new: true, populate: 'author', session },
       );
 
+      if (paymentData) {
+        // Update user verified status
+        await User.findByIdAndUpdate(
+          paymentData.author._id,
+          { isVerified: true },
+          { new: true, session },
+        );
+      }
+
+      // Commit transaction if all updates are successful
+      await session.commitTransaction();
       return verifyPay;
     } else {
+      // Payment was not successful; handle accordingly
+      await session.abortTransaction();
       return false;
     }
   } catch (err: any) {
-    throw new AppError(httpStatus.BAD_REQUEST, err.message);
+    // Roll back transaction on error
+    await session.abortTransaction();
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `Payment verification failed: ${err.message}`,
+    );
+  } finally {
+    // End session
+    session.endSession();
   }
 };
 

@@ -22,13 +22,17 @@ const PaymentRequest: RequestHandler = catchAsync(async (req, res, next) => {
 const PaymentSuccess: RequestHandler = catchAsync(async (req, res, next) => {
   const { txnId } = req.query;
 
+  // const result = true;
   const result = await PaymentService.paymentSuccess(txnId as string);
   if (result) {
     res.send(success(result));
   } else {
     sendResponse(res, {
+      // statusCode: httpStatus.OK,
       statusCode: httpStatus.FAILED_DEPENDENCY,
+      // success: true,
       success: false,
+      // message: 'payment success',
       message: 'pay filed',
       data: result,
     });
