@@ -14,7 +14,7 @@ const createUserIntoDB = async (payload: TUser) => {
     const result = await User.create(payload);
     return result;
   } catch (err: any) {
-    console.log('Error comparing passwords:', err);
+    console.log('Error user signup failed', err);
     throw new AppError(
       httpStatus.CONFLICT,
       err.message || 'user account create failed',

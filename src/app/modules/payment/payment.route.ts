@@ -12,7 +12,8 @@ router.post(
   verifyUser(),
   paymentController.PaymentRequest,
 );
-router.get('/success', paymentController.PaymentSuccess);
+router.post('/success', paymentController.PaymentSuccess);
+router.get('/monthly-payments', paymentController.GetMonthlyPayment);
 router.get('/failed', paymentController.paymentFailed);
 router.get('/cancelled', paymentController.paymentCancelled);
 

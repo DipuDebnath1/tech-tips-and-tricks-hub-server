@@ -5,6 +5,8 @@ import { User } from '../user/user.model';
 import config from '../../../config';
 import { paymentCollection } from './payment.model';
 import { initialPayment, verifyPayment } from './payment.utills';
+// import { join } from 'path';
+// import { readFileSync } from 'fs';
 
 type TPaymentRequestData = {
   userId: string;
@@ -42,6 +44,7 @@ const paymentRequest = async (data: TPaymentRequestData) => {
       customerEmail: user.email || '',
       customerPhone: user.phone || '',
       customerAddress: user.address || '',
+      // paymentSuccessUrl: `http://localhost:5000/payment/success?txnId=${transactionId}`,
       paymentSuccessUrl: `${config.server_url}/payment/success?txnId=${transactionId}`,
       paymentFailedUrl: `${config.server_url}/payment/failed`,
       paymentCancelledUrl: `${config.server_url}/payment/cancelled`,
@@ -62,53 +65,14 @@ const paymentRequest = async (data: TPaymentRequestData) => {
   }
 };
 
-//payment success
-// const paymentSuccess = async (txnId: string) => {
-//   const session = await paymentCollection.startSession();
-//   try {
-//     session.startTransaction();
-//     const verifyPay = await verifyPayment(txnId);
-
-//     if (verifyPay.pay_status === 'Successful') {
-//       // update user payment status
-//       const paymentData = await paymentCollection.findOneAndUpdate(
-//         { txtId: txnId },
-//         { isPayment: true, paymentMethod: verifyPay?.payment_type },
-//         { new: true, session },
-//       );
-//       // console.log(paymentData);
-//       if (paymentData) {
-//         // update user verified status
-//         await User.findByIdAndUpdate(
-//           paymentData.author,
-//           { isVerified: true },
-//           { new: true, session },
-//         );
-//       }
-//       session.commitTransaction();
-//       return verifyPay;
-//     } else {
-//       return false;
-//     }
-//   } catch (err: any) {
-//     session.abortTransaction();
-//     throw new AppError(httpStatus.BAD_REQUEST, err.message);
-//   } finally {
-//     session.endSession();
-//   }
-// };
-
-// paymentSuccess function to verify and update payment status
 const paymentSuccess = async (txnId: string) => {
   const session = await paymentCollection.startSession();
   try {
     session.startTransaction();
 
-    // Verify payment status via external API
     const verifyPay = await verifyPayment(txnId);
 
     if (verifyPay.pay_status === 'Successful') {
-      // Update payment status in paymentCollection
       const paymentData = await paymentCollection.findOneAndUpdate(
         { txtId: txnId },
         { isPayment: true, paymentMethod: verifyPay?.payment_type },
@@ -116,7 +80,6 @@ const paymentSuccess = async (txnId: string) => {
       );
 
       if (paymentData) {
-        // Update user verified status
         await User.findByIdAndUpdate(
           paymentData.author._id,
           { isVerified: true },
@@ -124,28 +87,59 @@ const paymentSuccess = async (txnId: string) => {
         );
       }
 
-      // Commit transaction if all updates are successful
       await session.commitTransaction();
-      return verifyPay;
+      // return template;
+      return paymentData;
     } else {
-      // Payment was not successful; handle accordingly
       await session.abortTransaction();
       return false;
     }
   } catch (err: any) {
-    // Roll back transaction on error
     await session.abortTransaction();
     throw new AppError(
       httpStatus.BAD_REQUEST,
       `Payment verification failed: ${err.message}`,
     );
   } finally {
-    // End session
     session.endSession();
+  }
+};
+
+//get monthlyPayment
+const getMonthlyPayment = async () => {
+  try {
+    const monthlyTotals = await paymentCollection.aggregate([
+      {
+        // Match only successful payments
+        $match: { isPayment: true },
+      },
+      {
+        // Group by year and month, and calculate the total amount
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' },
+          },
+          totalAmount: { $sum: '$amount' },
+        },
+      },
+      {
+        // Sort by year and month in descending order
+        $sort: { '_id.year': 1, '_id.month': 1 },
+      },
+    ]);
+
+    return monthlyTotals;
+  } catch (err: any) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      err.message || 'all payment monthly query failed',
+    );
   }
 };
 
 export const PaymentService = {
   paymentSuccess,
   paymentRequest,
+  getMonthlyPayment,
 };

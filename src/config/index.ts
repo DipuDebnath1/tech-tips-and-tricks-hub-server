@@ -15,4 +15,6 @@ export default {
   signatureKey: process.env.SIGNATURE_KEY,
   saltRounds: process.env.SALTROUNDS,
   development: process.env.DEVELOPMENT,
+  mailPassword: process.env.MAIL_PASS,
+  mailName: process.env.MAIL_NAME,
 };

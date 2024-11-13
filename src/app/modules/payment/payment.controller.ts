@@ -24,19 +24,20 @@ const PaymentSuccess: RequestHandler = catchAsync(async (req, res, next) => {
 
   // const result = true;
   const result = await PaymentService.paymentSuccess(txnId as string);
-  if (result) {
-    res.send(success(result));
-  } else {
-    sendResponse(res, {
-      // statusCode: httpStatus.OK,
-      statusCode: httpStatus.FAILED_DEPENDENCY,
-      // success: true,
-      success: false,
-      // message: 'payment success',
-      message: 'pay filed',
-      data: result,
-    });
-  }
+  // res.send(result);
+  // if (result) {
+  res.send(success(result));
+  // } else {
+  //   sendResponse(res, {
+  //     // statusCode: httpStatus.OK,
+  //     statusCode: httpStatus.FAILED_DEPENDENCY,
+  //     // success: true,
+  //     success: false,
+  //     // message: 'payment success',
+  //     message: 'pay filed',
+  //     data: result,
+  //   });
+  // }
 });
 
 // get paymentFailedUrl
@@ -48,9 +49,21 @@ const paymentCancelled: RequestHandler = catchAsync(async (req, res, next) => {
   res.send(cancelledPayment());
 });
 
+const GetMonthlyPayment: RequestHandler = catchAsync(async (req, res, next) => {
+  const result = await PaymentService.getMonthlyPayment();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'pay requested receive success',
+    data: result,
+  });
+});
+
 export const paymentController = {
   PaymentRequest,
   paymentCancelled,
   paymentFailed,
   PaymentSuccess,
+  GetMonthlyPayment,
 };
